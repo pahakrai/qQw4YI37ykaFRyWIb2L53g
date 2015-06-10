@@ -1,0 +1,9 @@
+beanstalkd:
+    host: "127.0.0.1"
+    port: 11300
+handlers:
+    - "./handlers/seed.js"
+watch:
+    - 'testtube'
+    - 'aftership-tube'
+ignoreDefault: true
