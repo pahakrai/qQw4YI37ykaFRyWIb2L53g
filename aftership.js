@@ -9,8 +9,10 @@ require('./server/config/mongoose')(config);
 
 var Rate = require('mongoose').model('Rate');
 
+//var count = 0;
 
 function updatedata(payload) {
+
     var keys = Object.keys(payload);
 
     var fromCur = payload[keys[0]],
@@ -37,7 +39,7 @@ function updatedata(payload) {
         var options = {new: true};
         Rate.findOneAndUpdate(query, update, options).exec(function(err, rate) {
             if (err) {
-              console.log('got an error');
+              console.log('query:' + err.message);
             }else {
               console.log( rate + ' ' + 'updated properly');
             }

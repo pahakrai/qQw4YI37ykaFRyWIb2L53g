@@ -6,7 +6,7 @@ module.exports = function(config) {
   var db = mongoose.connection;
   db.on('error', console.error.bind(console, 'connection ------ errror!!!'));
   db.once('open', function callback(){
-    console.log('cloudnews db connected');
+    console.log('aftership db connected');
   });
 
   rateModel.createDefaultRates();

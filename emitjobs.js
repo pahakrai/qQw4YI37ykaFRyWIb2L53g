@@ -2,7 +2,7 @@ var fivebeans = require('fivebeans');
 
 var host = 'localhost';
 var port = 11300;
-var tube = 'aftership-tube';
+var testtube = 'pahakrai';
 var scount = 0;
 var fcount = 0;
 var job1 =
@@ -22,21 +22,23 @@ var doneEmittingJobs = function()
 	process.exit(0);
 };
 
-var continuer = function(err, jobid)
+/*var continuer = function(err, jobid)
 {
 	console.log('emitted job id: ' + jobid);
 	if (joblist.length === 0)
 		return doneEmittingJobs();
 
 	emitter.put(0, 0, 60, JSON.stringify(['testtube', joblist.shift()]), continuer);
-};
+};*/
 
-var recursive = function(data,callback)
+var recursive = function(delay,callback)
 {
 		setInterval(function(){
-			callback(null,data)
+			callback(null,delay)
 		}, 60000);
 }
+
+/*
 
 var emitter = new fivebeans.client(host, port);
 emitter.on('connect', function()
@@ -44,21 +46,51 @@ emitter.on('connect', function()
 	emitter.use('testtube', function(err, tname)
 	{
 		console.log("using " + tname);
-		recursive(1,function(err,data){
-			emitter.put(0, 0, 3000, JSON.stringify(['testtube', job1]), function(err, jobid)
+			(function iterate(delay){
+				if(scount === 10 || fcount === 3){
+					return doneEmittingJobs();
+				}
+			emitter.put(0, 0, delay, JSON.stringify(['testtube', job1]), function(err, jobid)
 			{
 				if(err){
 					fcount++;
-				}else{
+					iterate(3000);
+				}
 				console.log('queued a seed job in testtube: ' + jobid);
-				scount++;}
-				if(scount == 10 || fcount == 3){
+				scount++;
+				iterate(60000);
+
+			}
+		)})(60000);
+	});
+});
+
+*/
+
+var emitter = new fivebeans.client(host, port);
+emitter.on('connect', function()
+{
+	emitter.use('testtube', function(err, tname)
+	{
+		console.log("using " + tname);
+		recursive(60000,function(err,delay){
+
+			emitter.put(0, 0, delay, JSON.stringify(['testtube', job1]), function(err, jobid)
+			{
+				if(err){
+					fcount++;
+					scount = 0;
+				}else{
+					console.log('queued a seed job in testtube: ' + jobid);
+					scount++;
+					fcount = 0;
+				}
+				if(scount === 10 || fcount === 3){
 					return doneEmittingJobs();
 				}
-			}
-		)}
-	);
-	});
+			})
+		})
+	})
 });
 
 

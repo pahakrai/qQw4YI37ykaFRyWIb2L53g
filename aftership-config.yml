@@ -5,5 +5,4 @@ handlers:
     - "./handlers/seed.js"
 watch:
     - 'testtube'
-    - 'aftership-tube'
 ignoreDefault: true
