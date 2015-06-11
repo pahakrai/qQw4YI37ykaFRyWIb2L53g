@@ -3,25 +3,17 @@ var fivebeans = require('fivebeans');
 var host = 'localhost';
 var port = 11300;
 var tube = 'aftership-tube';
-
+var scount = 0;
+var fcount = 0;
 var job1 =
 {
-	type: 'seed',
-	payload:
-	{
-	  from: 'HKD',
-	  to: 'USD'
-	}
-};
-
-var joblist = [{
 	type: 'seed',
 	payload:
 	{
 	  from: 'USD',
 	  to: 'HKD'
 	}
-}];
+};
 
 var doneEmittingJobs = function()
 {
@@ -39,25 +31,35 @@ var continuer = function(err, jobid)
 	emitter.put(0, 0, 60, JSON.stringify(['testtube', joblist.shift()]), continuer);
 };
 
+var recursive = function(data,callback)
+{
+		setInterval(function(){
+			callback(null,data)
+		}, 60000);
+}
+
 var emitter = new fivebeans.client(host, port);
 emitter.on('connect', function()
 {
 	emitter.use('testtube', function(err, tname)
 	{
 		console.log("using " + tname);
-		emitter.put(0, 0, 3000, JSON.stringify(['testtube', job1]), function(err, jobid)
-		{
-			console.log('queued a seed job in testtube: ' + jobid);
-			//emitter.put(0, 0, 60, JSON.stringify(['testtube', job2]), function(err, jobid)
-			//{
-			//	console.log('queued a key emitter job in testtube: ' + jobid);
-			return doneEmittingJobs();
-
-				// And an example of submitting jobs in a loop.
-				//emitter.put(0, 0, 3000, JSON.stringify(['testtube', joblist.shift()]), continuer);
-			//});
-		});
+		recursive(1,function(err,data){
+			emitter.put(0, 0, 3000, JSON.stringify(['testtube', job1]), function(err, jobid)
+			{
+				if(err){
+					fcount++;
+				}else{
+				console.log('queued a seed job in testtube: ' + jobid);
+				scount++;}
+				if(scount == 10 || fcount == 3){
+					return doneEmittingJobs();
+				}
+			}
+		)}
+	);
 	});
 });
+
 
 emitter.connect();

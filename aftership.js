@@ -10,11 +10,11 @@ require('./server/config/mongoose')(config);
 var Rate = require('mongoose').model('Rate');
 
 
-function updatedata(keys) {
-  console.log(keys);
-  setInterval(function(){
-    var fromCur = 'USD',
-        toCur = 'HKD';
+function updatedata(payload) {
+    var keys = Object.keys(payload);
+
+    var fromCur = payload[keys[0]],
+        toCur = payload[keys[1]];
 
 
     var options = {
@@ -30,18 +30,18 @@ function updatedata(keys) {
         body += data;
       });
       response.on('end', function() {
-        var response = JSON.parse(body);
+        var responseapi = JSON.parse(body);
+        var ratenew = Math.round(responseapi.rates.HKD * 100) / 100;
         var query = {from: 'USD', to: 'HKD'};
-        var update = {date: new Date(), rate: response.rates.HKD };
+        var update = {date: new Date(), rate: ratenew };
         var options = {new: true};
         Rate.findOneAndUpdate(query, update, options).exec(function(err, rate) {
-          if (err) {
-            console.log('got an error');
-          }else {
-            console.log( rate );
-            console.log('updated properly');
-          }
-        });
+            if (err) {
+              console.log('got an error');
+            }else {
+              console.log( rate + ' ' + 'updated properly');
+            }
+          });
       });
     });
 
@@ -50,43 +50,6 @@ function updatedata(keys) {
     });
 
     request.end();
-  },6000);
-  /*var fromCur = 'USD',
-      toCur = 'HKD';
-
-
-  var options = {
-    host : 'api.fixer.io',
-    path : "/latest?base="+fromCur+"&symbols="+toCur,
-    port : 80,
-    method : 'GET'
-  }
-
-  var request = http.request(options, function(response){
-    var body = "";
-    response.on('data', function(data) {
-      body += data;
-    });
-    response.on('end', function() {
-      var response = JSON.parse(body);
-      var query = {from: 'USD', to: 'HKD'};
-      var update = {date: new Date(), rate: response.rates.HKD };
-      var options = {new: true};
-      Rate.findOneAndUpdate(query, update, options).exec(function(err, rate) {
-        if (err) {
-          console.log('got an error');
-        }else {
-          console.log( rate + 'updated properly');
-        }
-      });
-    });
-  });
-
-  request.on('error', function(e) {
-    console.log('Problem with request: ' + e.message);
-  });
-
-  request.end();*/
 
 }
 
